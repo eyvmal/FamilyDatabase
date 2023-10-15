@@ -15,9 +15,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Login verifiaction
 const verifyJWT = (req, res, next) => {
 	const token = req.cookies.token;
-
+	// Check if there is a token
 	if (!token) {
 		res.json({ auth: false, message: "No token found!" });
 	} else {
@@ -37,25 +38,29 @@ app.post("/login", async (req, res) => {
 	const adminUsername = process.env.ADMIN_USERNAME;
 	const adminPassword = process.env.ADMIN_PASSWORD;
 
+	// Verify username and password
 	if (username === adminUsername && password === adminPassword) {
 		const jwtToken = jwt.sign(
 			{ username: adminUsername },
 			process.env.JWT_SECRET,
 			{ expiresIn: 10 }
 		);
+		// Create a token-cookie
 		res.cookie("token", jwtToken, {
 			httpOnly: true,
 			secure: false,
 		});
-		return res.status(200).json({ auth: true });
+		return res.json({ auth: true });
 	}
-	return res.json({ auth: false, message: "Failed to log in user!" });
+	return res.json({ auth: false });
 });
 
+// Call this method to verify their session
 app.post("/auth", verifyJWT, (req, res) => {
-	res.json({ auth: false, message: "Successful authentication of token!" });
+	res.json({ auth: true, message: "Successful authentication of token!" });
 });
 
+// Database queries
 app.get("/people", async (req, res) => {
 	try {
 		const result = await pool.query("SELECT * FROM people");
