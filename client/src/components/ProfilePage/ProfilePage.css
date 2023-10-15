@@ -1,0 +1,84 @@
+.root {
+  min-height: 100vh;
+  background-color: #f6f6f6;
+  color: black;
+}
+
+.imageBackground {
+  height: 33vh;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+#profileAvatar.avatar {
+  width: 30vmin;
+  height: 30vmin;
+  position: absolute;
+  bottom: -5vmin;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.gridContainer {
+  min-height: 67vh;
+  padding: 3rem;
+}
+
+.gridItem {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.detailsBox {
+  border-radius: 15px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+  padding: 15px;
+  background-color: white;
+  margin: 0 auto;
+  max-width: 80%;
+}
+
+.tabs {
+  display: none;
+}
+
+.tabLeft {
+  width: 40vmin;
+}
+
+.tabRight {
+  width: 40vmin;
+}
+
+.mobileHeader > .MuiTypography-root {
+  padding: 2vmin;
+  text-align: center;
+  font-size: 1.3rem;
+}
+
+div > ul {
+  margin: 0px;
+  padding-left: 1rem;
+}
+
+div > ul > li > a:link {
+  color: blue;
+}
+
+div > ul > li > a:visited {
+  color: blue;
+}
+
+@media (max-width: 700px) {
+  .gridContainer {
+    display: none;
+
+    .tabs {
+      display: flex;
+    }
+  }
+}

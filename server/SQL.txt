@@ -1,0 +1,41 @@
+========   CREATE TABLES   ========
+-- Drop tables if they already exist
+DROP TABLE IF EXISTS Relations;
+DROP TABLE IF EXISTS People;
+
+-- Create People table
+CREATE TABLE People (
+    id SERIAL PRIMARY KEY,
+    firstName VARCHAR(50),
+    lastName VARCHAR(50),
+    birth DATE,
+    death DATE NULL,
+    birthplace VARCHAR(50),
+    residence VARCHAR(50),
+    description TEXT
+);
+
+-- Create Relations table
+CREATE TABLE Relations (
+    id SERIAL PRIMARY KEY,
+    id_person1 INT,
+    id_person2 INT,
+    relation VARCHAR(50),
+    married DATE NULL,
+    FOREIGN KEY (id_person1) REFERENCES People(id),
+    FOREIGN KEY (id_person2) REFERENCES People(id)
+);
+
+
+
+========   ADD A PERSON   ========
+INSERT INTO People (firstName, lastName, birth, birthplace, residence, description)
+VALUES ('John', 'Doe', '1985-05-20', 'Los Angeles', 'New York', 'Software Engineer');
+
+
+
+========   ADD A RELATION   ========
+-- The relation parameter in the Relations table is either "mom", "dad", "partner"
+-- In this spesific example the person with id "1" is the father of person with id "2"
+INSERT INTO Relations (id_person1, id_person2, relation)
+VALUES ('1', '2', 'dad');

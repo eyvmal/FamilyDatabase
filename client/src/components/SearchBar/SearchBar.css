@@ -1,0 +1,24 @@
+.centered-flex {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.form-box {
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.form-box .paper-style {
+  padding: 10px 10px;
+  border-radius: 16px;
+  display: inline-flex;
+  background: white;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.centered-flex .text-field {
+  width: 300px;
+}

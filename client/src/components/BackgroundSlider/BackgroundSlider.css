@@ -1,0 +1,25 @@
+.container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background-color: whitesmoke;
+  overflow: hidden;
+}
+
+.pic {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 1s; /* 1 second transition for the fade effect */
+  box-sizing: border-box;
+}
+
+.pic.active {
+  opacity: 1;
+}
