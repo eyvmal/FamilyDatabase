@@ -61,9 +61,11 @@ app.post("/auth", verifyJWT, (req, res) => {
 });
 
 // Database queries
-app.get("/people", async (req, res) => {
+app.get("/names", async (req, res) => {
 	try {
-		const result = await pool.query("SELECT * FROM people");
+		const result = await pool.query(
+			"SELECT id, firstname, lastname FROM people"
+		);
 		const formattedNamesWithID = result.rows
 			.filter((person) => person.firstname && person.lastname)
 			.map((person) => ({
@@ -71,6 +73,18 @@ app.get("/people", async (req, res) => {
 				name: `${person.firstname} ${person.lastname}`,
 			}));
 		res.json(formattedNamesWithID);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({ error: "Database query failed" });
+	}
+});
+
+app.get("/people", async (req, res) => {
+	try {
+		const result = await pool.query(
+			"SELECT *, TO_CHAR(birth, 'DD-MM-YYYY') AS birth, TO_CHAR(death, 'DD-MM-YYYY') AS death FROM people;"
+		);
+		res.json(result.rows);
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({ error: "Database query failed" });
@@ -90,6 +104,112 @@ app.get("/p", async (req, res) => {
 	} catch (err) {
 		console.log(err);
 		res.status(500).json({ error: "Database query failed" });
+	}
+});
+
+app.post("/addPerson", verifyJWT, async (req, res) => {
+	try {
+		const {
+			firstname,
+			lastname,
+			birth: rawBirth,
+			death: rawDeath,
+			birthplace,
+			residence,
+			description,
+		} = req.body;
+
+		const birth = convertDateFormat(rawBirth);
+		const death = rawDeath ? convertDateFormat(rawDeath) : null;
+
+		const query = `
+      INSERT INTO people (firstName, lastName, birth, death, birthplace, residence, description)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+			RETURNING *;
+    `;
+
+		const values = [
+			firstname,
+			lastname,
+			birth,
+			death,
+			birthplace,
+			residence,
+			description,
+		];
+		const result = await pool.query(query, values);
+		res.json({ success: result.rowCount > 0 });
+	} catch (error) {
+		console.error("Failed to insert data into the database:", error);
+		res.status(500).json({ success: false });
+	}
+});
+
+app.post("/editPerson", verifyJWT, async (req, res) => {
+	try {
+		const {
+			id,
+			firstname,
+			lastname,
+			birth: rawBirth,
+			death: rawDeath,
+			birthplace,
+			residence,
+			description,
+		} = req.body;
+
+		const birth = convertDateFormat(rawBirth);
+		const death = rawDeath ? convertDateFormat(rawDeath) : null;
+
+		const updateQuery = `
+			UPDATE people SET
+				firstName = $1,
+				lastName = $2,
+				birth = $3,
+				death = $4,
+				birthplace = $5,
+				residence = $6,
+				description = $7
+			WHERE id = $8
+		`;
+		const values = [
+			firstname,
+			lastname,
+			birth,
+			death,
+			birthplace,
+			residence,
+			description,
+			id,
+		];
+
+		await pool.query(updateQuery, values);
+
+		res.json({ success: true });
+	} catch (error) {
+		console.error("Failed to edit data in the database:", error);
+		res.status(500).json({ success: false });
+	}
+});
+
+app.post("/deletePerson", verifyJWT, async (req, res) => {
+	try {
+		const { id } = req.body; // Extract ID from request body
+
+		console.log(id);
+
+		if (!id) {
+			return res
+				.status(400)
+				.json({ success: false, message: "ID is required" });
+		}
+
+		await pool.query("DELETE FROM people WHERE id = $1", [id]);
+
+		res.json({ success: true });
+	} catch (error) {
+		console.error("Failed to delete data in the database:", error);
+		res.status(500).json({ success: false });
 	}
 });
 
@@ -213,3 +333,10 @@ app.get("/r", async (req, res) => {
 });
 
 app.listen(4000, () => console.log("Server on http://localhost:4000"));
+
+function convertDateFormat(dateString) {
+	const parts = dateString.split("-");
+	if (parts.length !== 3) return null;
+	const [day, month, year] = parts;
+	return `${year}-${month}-${day}`;
+}

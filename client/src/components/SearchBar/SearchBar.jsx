@@ -13,7 +13,7 @@ const SearchBar = () => {
 
 	useEffect(() => {
     axios
-        .get("http://localhost:4000/people")
+        .get("http://localhost:4000/names")
         .then((response) => {
             setNames(response.data.map(person => ({ title: person.name, id: person.id })));
         })
