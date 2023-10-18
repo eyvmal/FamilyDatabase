@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { MaterialReactTable } from "material-react-table";
+import Navbar from "./Navbar";
 import {
 	Box,
 	Button,
@@ -235,6 +236,7 @@ const DashboardPeople = () => {
 
 	return (
 		<>
+			<Navbar /> {/* Navbar is moved here */}
 			<MaterialReactTable
 				displayColumnDefOptions={{
 					"mrt-row-actions": {

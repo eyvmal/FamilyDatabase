@@ -5,6 +5,7 @@ import App from "./App.jsx";
 import ProfilePage from "./components/ProfilePage/ProfilePage.jsx";
 import Login from "./components/Login/Login.jsx";
 import DashboardPeople from "./components/Dashboard/DashboardPeople.jsx";
+import DashboardRelations from "./components/Dashboard/DashboardRelations.jsx";
 import "./index.css";
 
 function Main() {
@@ -15,6 +16,7 @@ function Main() {
 				<Route path="/profile" element={<ProfilePage />} />
 				<Route path="/login" element={<Login />} />
 				<Route path="/dashboard/people" element={<DashboardPeople />} />
+				<Route path="/dashboard/relations" element={<DashboardRelations />} />
 			</Routes>
 		</Router>
 	);

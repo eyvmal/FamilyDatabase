@@ -1,58 +1,94 @@
 import React, { useState } from "react";
-import { Button, TextField } from "@mui/material";
+import {
+	Button,
+	Container,
+	Box,
+	TextField,
+	Typography,
+	Paper,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-axios.defaults.withCredentials = true;
 
-function Login() {
+const Login = () => {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
-	const [loginStatus, setLoginStatus] = useState(false);
+	const [errorMessage, setErrorMessage] = useState("");
+	const navigate = useNavigate();
 
-	const handleLogin = () => {
-		axios
-			.post("http://localhost:4000/login", {
+	const handleLogin = async (event) => {
+		event.preventDefault(); // Prevent default form submission
+
+		try {
+			const res = await axios.post("http://localhost:4000/login", {
 				username: username,
 				password: password,
-			})
-			.then((res) => {
-				if (res.data.auth) {
-					console.log("Login successful!");
-					setLoginStatus(true);
-				} else {
-					console.log("Wrong username/password!");
-					setLoginStatus(false);
-				}
 			});
-	};
 
-	const authenticate = () => {
-		axios
-			.post("http://localhost:4000/auth")
-			.then((res) => {
-				console.log(res.data.message);
-			})
-			.catch((error) => {
-				console.error("There was an error:", error);
-			});
+			if (res.data.auth) {
+				navigate("/dashboard/people");
+			} else {
+				setErrorMessage("Login failed. Please check your credentials.");
+			}
+		} catch (error) {
+			console.error("Error during login:", error);
+			setErrorMessage("An error occurred. Please try again.");
+		}
 	};
 
 	return (
-		<div>
-			<TextField
-				label="Username"
-				value={username}
-				onChange={(e) => setUsername(e.target.value)}
-			/>
-			<TextField
-				label="Password"
-				type="password"
-				value={password}
-				onChange={(e) => setPassword(e.target.value)}
-			/>
-			<Button onClick={handleLogin}>Login</Button>
-			<Button onClick={authenticate}>Check Authentication</Button>
-		</div>
+		<Container
+			sx={{
+				display: "flex",
+				flexDirection: "column",
+				alignItems: "center",
+				justifyContent: "center",
+				height: "100vh",
+			}}
+		>
+			<Paper
+				elevation={3}
+				sx={{ padding: 4, width: "300px", borderRadius: "8px" }}
+			>
+				<Typography variant="h4" mb={3}>
+					Login
+				</Typography>
+
+				{errorMessage && (
+					<Typography color="error" mb={2}>
+						{errorMessage}
+					</Typography>
+				)}
+
+				<form onSubmit={handleLogin}>
+					<Box mb={3}>
+						<TextField
+							fullWidth
+							label="Username"
+							variant="outlined"
+							value={username}
+							onChange={(e) => setUsername(e.target.value)}
+						/>
+					</Box>
+
+					<Box mb={3}>
+						<TextField
+							fullWidth
+							type="password"
+							label="Password"
+							variant="outlined"
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
+						/>
+					</Box>
+
+					<Button type="submit" variant="contained" color="primary">
+						Login
+					</Button>
+				</form>
+			</Paper>
+		</Container>
 	);
-}
+};
 
 export default Login;

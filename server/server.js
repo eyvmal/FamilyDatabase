@@ -140,7 +140,7 @@ app.post("/addPerson", verifyJWT, async (req, res) => {
 		const result = await pool.query(query, values);
 		res.json({ success: result.rowCount > 0 });
 	} catch (error) {
-		console.error("Failed to insert data into the database:", error);
+		console.error("Failed to insert person into database:", error);
 		res.status(500).json({ success: false });
 	}
 });
@@ -187,7 +187,7 @@ app.post("/editPerson", verifyJWT, async (req, res) => {
 
 		res.json({ success: true });
 	} catch (error) {
-		console.error("Failed to edit data in the database:", error);
+		console.error("Failed to edit person in database:", error);
 		res.status(500).json({ success: false });
 	}
 });
@@ -208,11 +208,22 @@ app.post("/deletePerson", verifyJWT, async (req, res) => {
 
 		res.json({ success: true });
 	} catch (error) {
-		console.error("Failed to delete data in the database:", error);
+		console.error("Failed to delete person in database:", error);
 		res.status(500).json({ success: false });
 	}
 });
 
+app.get("/relations", async (req, res) => {
+	try {
+		const result = await pool.query(
+			"SELECT *, TO_CHAR(married, 'DD-MM-YYYY') AS married FROM relations;"
+		);
+		res.json(result.rows);
+	} catch (err) {
+		console.log(err);
+		res.status(500).json({ error: "Database query failed" });
+	}
+});
 app.get("/r", async (req, res) => {
 	try {
 		const personID = req.query.id;
@@ -329,6 +340,98 @@ app.get("/r", async (req, res) => {
 	} catch (err) {
 		console.log(err);
 		res.status(500).json(null);
+	}
+});
+
+// Add a relation to the database
+app.post("/addRelation", async (req, res) => {
+	try {
+		const {
+			person1firstname,
+			person1lastname,
+			person2firstname,
+			person2lastname,
+			relation,
+			married: rawMarried,
+		} = req.body;
+
+		const getPersonId = async (firstname, lastname) => {
+			const result = await pool.query(
+				"SELECT id FROM people WHERE firstname = $1 AND lastname = $2",
+				[firstname, lastname]
+			);
+			if (result.rows.length === 0)
+				throw new Error(`No person found with name: ${firstname} ${lastname}`);
+			return result.rows[0].id;
+		};
+
+		const id_person1 = await getPersonId(person1firstname, person1lastname);
+		const id_person2 = await getPersonId(person2firstname, person2lastname);
+
+		const married = rawMarried ? convertDateFormat(rawMarried) : null;
+
+		const query = `
+					INSERT INTO relations (id_person1, id_person2, relation, married)
+					VALUES ($1, $2, $3, $4)
+					RETURNING *;
+			`;
+
+		const values = [id_person1, id_person2, relation, married];
+		const result = await pool.query(query, values);
+		res.json({ success: result.rowCount > 0 });
+	} catch (error) {
+		console.error("Failed to insert relation into database:", error);
+		res.status(500).json({ success: false, message: error.message });
+	}
+});
+
+// Edit a relaation
+app.post("/editRelation", async (req, res) => {
+	try {
+		const {
+			id,
+			id_person1,
+			id_person2,
+			relation,
+			married: rawMarried,
+		} = req.body;
+
+		const married = rawMarried ? convertDateFormat(rawMarried) : null;
+
+		const updateQuery = `
+			UPDATE relations SET
+			id_person1 = $1,
+			id_person2 = $2,
+			relation = $3,
+			married = $4
+			WHERE id = $5
+		`;
+		const values = [id_person1, id_person2, relation, married, id];
+
+		await pool.query(updateQuery, values);
+
+		res.json({ success: true });
+	} catch (error) {
+		console.error("Failed to edit relation in database:", error);
+		res.status(500).json({ success: false });
+	}
+});
+
+app.delete("/deleteRelation", async (req, res) => {
+	try {
+		const { id } = req.body;
+
+		if (!id) {
+			return res
+				.status(400)
+				.json({ success: false, message: "ID is required" });
+		}
+
+		await pool.query("DELETE FROM relations WHERE id = $1", [id]);
+		res.json({ success: true });
+	} catch (error) {
+		console.error("Failed to delete relation in database:", error);
+		res.status(500).json({ success: false, message: "Internal Server Error" });
 	}
 });
 
